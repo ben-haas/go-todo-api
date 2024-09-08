@@ -8,6 +8,16 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type RefreshToken struct {
+	ID        int64            `json:"id"`
+	Token     string           `json:"token"`
+	ExpiresAt pgtype.Timestamp `json:"expires_at"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UserID    pgtype.Int8      `json:"user_id"`
+	IpAddress pgtype.Text      `json:"ip_address"`
+	Device    pgtype.Text      `json:"device"`
+}
+
 type Todo struct {
 	ID          int64            `json:"id"`
 	Title       string           `json:"title"`
@@ -16,6 +26,7 @@ type Todo struct {
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 	UserID      pgtype.Int8      `json:"user_id"`
+	Done        bool             `json:"done"`
 }
 
 type User struct {
@@ -24,4 +35,5 @@ type User struct {
 	Password  string           `json:"password"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+	IsAdmin   bool             `json:"is_admin"`
 }

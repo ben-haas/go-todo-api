@@ -50,7 +50,7 @@ func (q *Queries) DeleteTodo(ctx context.Context, arg DeleteTodoParams) error {
 
 const getTodoByID = `-- name: GetTodoByID :one
 
-SELECT id, title, description, priority, created_at, updated_at, user_id FROM todos WHERE id = $1 AND user_id = $2
+SELECT id, title, description, priority, created_at, updated_at, user_id, done FROM todos WHERE id = $1 AND user_id = $2
 `
 
 type GetTodoByIDParams struct {
@@ -70,12 +70,13 @@ func (q *Queries) GetTodoByID(ctx context.Context, arg GetTodoByIDParams) (Todo,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserID,
+		&i.Done,
 	)
 	return i, err
 }
 
 const listTodos = `-- name: ListTodos :many
-SELECT id, title, description, priority, created_at, updated_at, user_id FROM todos WHERE user_id = $1
+SELECT id, title, description, priority, created_at, updated_at, user_id, done FROM todos WHERE user_id = $1
 `
 
 func (q *Queries) ListTodos(ctx context.Context, userID pgtype.Int8) ([]Todo, error) {
@@ -95,6 +96,7 @@ func (q *Queries) ListTodos(ctx context.Context, userID pgtype.Int8) ([]Todo, er
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UserID,
+			&i.Done,
 		); err != nil {
 			return nil, err
 		}

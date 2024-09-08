@@ -1,12 +1,14 @@
 package middleware
 
 import (
-	"net/http"
-	"strings"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"os"
+	"strings"
 	"todo-api/util"
 )
+
+var accessSecret = []byte(os.Getenv("JWT_ACCESS_KEY"))
 
 func Authenticate(c *gin.Context) {
 	authHeader := c.Request.Header.Get("Authorization")
@@ -22,7 +24,7 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 
-	UserId, Email, err := util.VerifyToken(tokenString)
+	UserId, Email, err := util.VerifyToken(tokenString, accessSecret)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return

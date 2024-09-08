@@ -53,7 +53,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 
 const getUserByID = `-- name: GetUserByID :one
 
-SELECT id, email, password, created_at, updated_at FROM users WHERE id = $1
+SELECT id, email, password, created_at, updated_at, is_admin FROM users WHERE id = $1
 `
 
 // Return the generated ID
@@ -66,12 +66,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsAdmin,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, password, created_at, updated_at FROM users
+SELECT id, email, password, created_at, updated_at, is_admin FROM users
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -89,6 +90,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Password,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.IsAdmin,
 		); err != nil {
 			return nil, err
 		}

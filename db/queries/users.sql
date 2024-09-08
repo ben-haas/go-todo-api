@@ -6,6 +6,9 @@ RETURNING id;  -- Return the generated ID
 -- name: GetUserByID :one
 SELECT * FROM users WHERE id = $1;
 
+-- name: GetUserByEmail :one
+SELECT id, email, password FROM users WHERE email = $1;
+
 -- name: ListUsers :many
 SELECT * FROM users;
 

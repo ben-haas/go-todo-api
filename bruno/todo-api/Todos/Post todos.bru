@@ -10,11 +10,15 @@ post {
   auth: none
 }
 
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJleHAiOjE3MjYwMjY3NjQsImlhdCI6MTcyNTc2NzU2NH0.WN5VDjrQGnTnJ39Jt2VFyHT2EjsMqCX7ipMy2GP-B84
+}
+
 body:json {
   {
     "title": "New Todo",
     "description": "This is a new todo.",
     "priority": "high",
-    "user_id": 1
+    "user_id": 2
   }
 }

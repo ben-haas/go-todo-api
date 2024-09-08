@@ -6,6 +6,16 @@ meta {
 
 get {
   url: {{base_url}}/todos
-  body: none
+  body: json
   auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJleHAiOjE3MjYwMjY3NjQsImlhdCI6MTcyNTc2NzU2NH0.WN5VDjrQGnTnJ39Jt2VFyHT2EjsMqCX7ipMy2GP-B84
+}
+
+body:json {
+  {
+    "userId": "2"
+  }
 }

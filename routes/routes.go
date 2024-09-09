@@ -15,7 +15,7 @@ func RegisterRoutes(server *gin.Engine, queries *db.Queries) {
 	server.GET("/users", GetUsersHandler(queries))
 	server.POST("/signup", SignUpHandler(queries))
 	server.POST("/login", LoginHandler(queries))
-	server.POST("/refresh", RefreshTokenHandler(queries))
+	server.POST("/refresh", RefreshTokenHandler())
 
 	authenticated := server.Group("/")
 	authenticated.Use(middleware.Authenticate)
@@ -24,5 +24,4 @@ func RegisterRoutes(server *gin.Engine, queries *db.Queries) {
 	authenticated.GET("/todos/:id", GetTodoByIDHandler(queries))
 	authenticated.POST("/todos", CreateTodoHandler(queries))
 	authenticated.DELETE("/todos/:id", DeleteTodoHandler(queries))
-	authenticated.POST("/revoke_all_sessions", RevokeAllSessionsHandler(queries))
 }

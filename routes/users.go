@@ -3,7 +3,6 @@ package routes
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgtype"
 	"net/http"
 	"strconv"
 	"todo-api/internal/db"
@@ -105,26 +104,9 @@ func LoginHandler(queries *db.Queries) gin.HandlerFunc {
 			return
 		}
 
-		refreshToken, expirationTime, err := util.GenerateRefreshToken(dbUser.ID, dbUser.Email)
+		refreshToken, err := util.GenerateRefreshToken(dbUser.ID, dbUser.Email)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-			return
-		}
-
-		ipAddress := util.GetIPAddress(c)
-		device := util.GetDeviceInfo(c)
-
-		params := db.StoreRefreshTokenParams{
-			Token:     refreshToken,
-			UserID:    pgtype.Int8{Int64: dbUser.ID, Valid: true},
-			ExpiresAt: pgtype.Timestamp{Time: expirationTime, Valid: true},
-			IpAddress: pgtype.Text{String: ipAddress, Valid: true},
-			Device:    pgtype.Text{String: device, Valid: true},
-		}
-
-		err = queries.StoreRefreshToken(context.Background(), params)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store refresh token"})
 			return
 		}
 
@@ -133,7 +115,7 @@ func LoginHandler(queries *db.Queries) gin.HandlerFunc {
 }
 
 // RefreshTokenHandler generates a new access token using a refresh token
-func RefreshTokenHandler(queries *db.Queries) gin.HandlerFunc {
+func RefreshTokenHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		refreshToken := c.Request.Header.Get("Refresh-Token")
 		if refreshToken == "" {
@@ -148,24 +130,5 @@ func RefreshTokenHandler(queries *db.Queries) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"access_token": newAccessToken})
-	}
-}
-
-// RevokeAllSessionsHandler revokes all refresh tokens for a user
-func RevokeAllSessionsHandler(queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userID, ok := c.Get("userId")
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user ID"})
-			return
-		}
-
-		err := queries.DeleteRefreshTokensByUserId(context.Background(), pgtype.Int8{Int64: userID.(int64), Valid: true})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke tokens"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"message": "All sessions revoked"})
 	}
 }

@@ -43,7 +43,7 @@ func GenerateAccessToken(userID int64, email string) (string, error) {
 }
 
 // GenerateRefreshToken generates a new JWT token for the authenticated user
-func GenerateRefreshToken(userID int64, email string) (string, time.Time, error) {
+func GenerateRefreshToken(userID int64, email string) (string, error) {
 	expirationTime := time.Now().Add(refreshTokenExpiration)
 	claims := &Claims{
 		UserID: userID,
@@ -58,10 +58,10 @@ func GenerateRefreshToken(userID int64, email string) (string, time.Time, error)
 
 	tokenString, err := token.SignedString(refreshSecret)
 	if err != nil {
-		return "", time.Now(), err
+		return "", err
 	}
 
-	return tokenString, expirationTime, nil
+	return tokenString, nil
 }
 
 // VerifyToken verifies the JWT token and returns the user ID and email if valid

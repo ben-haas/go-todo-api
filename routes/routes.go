@@ -11,13 +11,14 @@ import (
 
 // RegisterRoutes registers all the application's routes with Gin.
 func RegisterRoutes(server *gin.Engine, queries *db.Queries) {
+	v1 := server.Group("/v1")
 
-	server.GET("/users", GetUsersHandler(queries))
-	server.POST("/signup", SignUpHandler(queries))
-	server.POST("/login", LoginHandler(queries))
-	server.POST("/refresh", RefreshTokenHandler())
+	v1.GET("/users", GetUsersHandler(queries))
+	v1.POST("/signup", SignUpHandler(queries))
+	v1.POST("/login", LoginHandler(queries))
+	v1.POST("/refresh", RefreshTokenHandler())
 
-	authenticated := server.Group("/")
+	authenticated := v1.Group("/")
 	authenticated.Use(middleware.Authenticate)
 	authenticated.DELETE("/users/:id", DeleteUserHandler(queries))
 	authenticated.GET("/todos", GetTodosHandler(queries))

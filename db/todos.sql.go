@@ -7,25 +7,23 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTodo = `-- name: CreateTodo :exec
 INSERT INTO todos (title, description, priority, user_id)
-VALUES ($1, $2, $3, $4)
+VALUES (?, ?, ?, ?)
 RETURNING id
 `
 
 type CreateTodoParams struct {
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	Priority    string      `json:"priority"`
-	UserID      pgtype.Int8 `json:"user_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Priority    string `json:"priority"`
+	UserID      int64  `json:"user_id"`
 }
 
 func (q *Queries) CreateTodo(ctx context.Context, arg CreateTodoParams) error {
-	_, err := q.db.Exec(ctx, createTodo,
+	_, err := q.db.ExecContext(ctx, createTodo,
 		arg.Title,
 		arg.Description,
 		arg.Priority,
@@ -35,52 +33,50 @@ func (q *Queries) CreateTodo(ctx context.Context, arg CreateTodoParams) error {
 }
 
 const deleteTodo = `-- name: DeleteTodo :exec
-DELETE FROM todos WHERE id = $1 AND user_id = $2
+DELETE FROM todos WHERE id = ? AND user_id = ?
 `
 
 type DeleteTodoParams struct {
-	ID     int64       `json:"id"`
-	UserID pgtype.Int8 `json:"user_id"`
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
 }
 
 func (q *Queries) DeleteTodo(ctx context.Context, arg DeleteTodoParams) error {
-	_, err := q.db.Exec(ctx, deleteTodo, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, deleteTodo, arg.ID, arg.UserID)
 	return err
 }
 
 const getTodoByID = `-- name: GetTodoByID :one
 
-SELECT id, title, description, priority, created_at, updated_at, user_id, done FROM todos WHERE id = $1 AND user_id = $2
+SELECT id, title, description, priority, complete, user_id FROM todos WHERE id = ? AND user_id = ?
 `
 
 type GetTodoByIDParams struct {
-	ID     int64       `json:"id"`
-	UserID pgtype.Int8 `json:"user_id"`
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
 }
 
 // Return the generated ID
 func (q *Queries) GetTodoByID(ctx context.Context, arg GetTodoByIDParams) (Todo, error) {
-	row := q.db.QueryRow(ctx, getTodoByID, arg.ID, arg.UserID)
+	row := q.db.QueryRowContext(ctx, getTodoByID, arg.ID, arg.UserID)
 	var i Todo
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
 		&i.Description,
 		&i.Priority,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+		&i.Complete,
 		&i.UserID,
-		&i.Done,
 	)
 	return i, err
 }
 
 const listTodos = `-- name: ListTodos :many
-SELECT id, title, description, priority, created_at, updated_at, user_id, done FROM todos WHERE user_id = $1
+SELECT id, title, description, priority, complete, user_id FROM todos WHERE user_id = ?
 `
 
-func (q *Queries) ListTodos(ctx context.Context, userID pgtype.Int8) ([]Todo, error) {
-	rows, err := q.db.Query(ctx, listTodos, userID)
+func (q *Queries) ListTodos(ctx context.Context, userID int64) ([]Todo, error) {
+	rows, err := q.db.QueryContext(ctx, listTodos, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -93,14 +89,15 @@ func (q *Queries) ListTodos(ctx context.Context, userID pgtype.Int8) ([]Todo, er
 			&i.Title,
 			&i.Description,
 			&i.Priority,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.Complete,
 			&i.UserID,
-			&i.Done,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -109,23 +106,28 @@ func (q *Queries) ListTodos(ctx context.Context, userID pgtype.Int8) ([]Todo, er
 }
 
 const updateTodo = `-- name: UpdateTodo :exec
-UPDATE todos SET title = $2, description = $3, priority = $4, updated_at = NOW() WHERE id = $1 AND user_id = $5
+UPDATE todos
+SET title = ?, description = ?, priority = ?, complete = ?, updated_at = NOW()
+WHERE id = ? AND user_id = ?
+RETURNING id, title, description, priority, complete, user_id
 `
 
 type UpdateTodoParams struct {
-	ID          int64       `json:"id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	Priority    string      `json:"priority"`
-	UserID      pgtype.Int8 `json:"user_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Priority    string `json:"priority"`
+	Complete    bool   `json:"complete"`
+	ID          int64  `json:"id"`
+	UserID      int64  `json:"user_id"`
 }
 
 func (q *Queries) UpdateTodo(ctx context.Context, arg UpdateTodoParams) error {
-	_, err := q.db.Exec(ctx, updateTodo,
-		arg.ID,
+	_, err := q.db.ExecContext(ctx, updateTodo,
 		arg.Title,
 		arg.Description,
 		arg.Priority,
+		arg.Complete,
+		arg.ID,
 		arg.UserID,
 	)
 	return err

@@ -21,4 +21,6 @@ go.work.sum
 
 # env file
 .env
-/bruno/
+
+# db file
+api.db

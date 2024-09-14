@@ -1,2 +1,0 @@
-ALTER TABLE refresh_tokens
-    ALTER COLUMN user_id SET DATA TYPE BIGINT USING user_id::BIGINT;

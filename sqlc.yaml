@@ -1,13 +1,10 @@
 version: '2'
-cloud:
-  project: '01J76MMW1QK49P3R82XPCET2E4'
 sql:
-  - schema: 'db/migrations'
+  - schema: 'db/schema.sql'
     queries: 'db/queries'
-    engine: postgresql
+    engine: "sqlite"
     gen:
       go:
         package: 'db'
-        out: 'internal/db'
+        out: 'db'
         emit_json_tags: true
-        sql_package: "pgx/v5"

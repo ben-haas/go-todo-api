@@ -1,15 +1,20 @@
 package main
 
 import (
+	"context"
+	"database/sql"
+	_ "embed"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
-	"time"
-	"todo-api/internal/app"
-	"todo-api/internal/db"
+	"todo-api/db"
 	"todo-api/middleware"
 	"todo-api/routes"
 )
+
+//go:embed db/schema.sql
+var ddl string
 
 func main() {
 	// Load environment variables
@@ -18,22 +23,24 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Initialize the database connection pool
-	pool, err := app.InitDB()
+	// Initialize the database
+	ctx := context.Background()
+
+	sqlite, err := sql.Open("sqlite3", "api.db")
 	if err != nil {
-		log.Fatalf("Failed to initialize the database: %v", err)
+		log.Fatal(err)
 	}
-	defer pool.Close()
 
-	queries := db.New(pool)
+	if _, err := sqlite.ExecContext(ctx, ddl); err != nil {
+		log.Fatal(err)
+	}
 
-	// 5 requests per second
-	rateLimiter := middleware.NewRateLimiter(1*time.Second, 5)
+	queries := db.New(sqlite)
 
 	// Setup web server
 	server := gin.Default()
 
-	server.Use(rateLimiter.Limit())
+	server.Use(middleware.NewRateLimiter(5, 5).Limit())
 
 	routes.RegisterRoutes(server, queries)
 

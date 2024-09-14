@@ -1,18 +1,17 @@
 package routes
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"todo-api/internal/db"
+	"todo-api/db"
 	"todo-api/util"
 )
 
 // GetUsersHandler retrieves a list of users from the database
 func GetUsersHandler(queries *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		users, err := queries.ListUsers(context.Background())
+		users, err := queries.ListUsers(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
 			return
@@ -45,7 +44,7 @@ func SignUpHandler(queries *db.Queries) gin.HandlerFunc {
 			Password: hashedPassword,
 		}
 
-		err = queries.CreateUser(context.Background(), params)
+		err = queries.CreateUser(c, params)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 			return
@@ -66,7 +65,7 @@ func DeleteUserHandler(queries *db.Queries) gin.HandlerFunc {
 			return
 		}
 
-		err = queries.DeleteUser(context.Background(), id)
+		err = queries.DeleteUser(c, id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 			return
@@ -85,7 +84,7 @@ func LoginHandler(queries *db.Queries) gin.HandlerFunc {
 			return
 		}
 
-		dbUser, err := queries.GetUserByEmail(context.Background(), user.Email)
+		dbUser, err := queries.GetUserByEmail(c, user.Email)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return

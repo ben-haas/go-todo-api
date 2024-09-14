@@ -1,19 +1,22 @@
 -- name: CreateUser :exec
 INSERT INTO users (email, password)
-VALUES ($1, $2)
-RETURNING id;  -- Return the generated ID
+VALUES (?, ?)
+RETURNING *;  -- Return the generated ID
 
 -- name: GetUserByID :one
-SELECT * FROM users WHERE id = $1;
+SELECT * FROM users WHERE id = ?;
 
 -- name: GetUserByEmail :one
-SELECT id, email, password FROM users WHERE email = $1;
+SELECT id, email, password FROM users WHERE email = ?;
 
 -- name: ListUsers :many
 SELECT * FROM users;
 
 -- name: UpdateUser :exec
-UPDATE users SET email = $2, password = $3, updated_at = NOW() WHERE id = $1;
+UPDATE users
+SET email = ?, password = ?, updated_at = NOW()
+WHERE id = ?
+RETURNING *;
 
 -- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1;
+DELETE FROM users WHERE id = ?;

@@ -2,14 +2,10 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"todo-api/internal/db"
+	"todo-api/db"
 	"todo-api/middleware"
 )
 
-// TODO add admin routes
-// TODO handle token refresh client side
-
-// RegisterRoutes registers all the application's routes with Gin.
 func RegisterRoutes(server *gin.Engine, queries *db.Queries) {
 	v1 := server.Group("/v1")
 

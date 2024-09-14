@@ -1,16 +1,19 @@
 -- name: CreateTodo :exec
 INSERT INTO todos (title, description, priority, user_id)
-VALUES ($1, $2, $3, $4)
+VALUES (?, ?, ?, ?)
 RETURNING id;  -- Return the generated ID
 
 -- name: GetTodoByID :one
-SELECT * FROM todos WHERE id = $1 AND user_id = $2;
+SELECT * FROM todos WHERE id = ? AND user_id = ?;
 
 -- name: ListTodos :many
-SELECT * FROM todos WHERE user_id = $1;
+SELECT * FROM todos WHERE user_id = ?;
 
 -- name: UpdateTodo :exec
-UPDATE todos SET title = $2, description = $3, priority = $4, updated_at = NOW() WHERE id = $1 AND user_id = $5;
+UPDATE todos
+SET title = ?, description = ?, priority = ?, complete = ?, updated_at = NOW()
+WHERE id = ? AND user_id = ?
+RETURNING *;
 
 -- name: DeleteTodo :exec
-DELETE FROM todos WHERE id = $1 AND user_id = $2;
+DELETE FROM todos WHERE id = ? AND user_id = ?;
